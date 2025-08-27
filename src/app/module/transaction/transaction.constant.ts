@@ -1,1 +1,1 @@
-export const transactionSearchableFields = ["transactionType", "status", "initiatedBy", "from", "to"];
+export const transactionSearchableFields = ["_id","to", "from", "status", "transactionType"]

@@ -24,7 +24,7 @@ const userSchema = new Schema<IUser>(
     phone: { type: String, required: true, unique: true },
     picture: { type: String },
     address: { type: String },
-    isVerified: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: true },
     commissionRate: {
       type: Number,
       default: function () {

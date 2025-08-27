@@ -11,12 +11,14 @@ const credentialsLogin = catchAsync(async (req: Request, res: Response, next: Ne
 
     res.cookie("accessToken", loginInfo.accessToken, {
         httpOnly: true,
-        secure: false
+        secure: true,
+        sameSite: "none"
     })
 
     res.cookie("refreshToken", loginInfo.refreshToken, {
         httpOnly: true,
-        secure: false,
+        secure: true,
+        sameSite: "none"
     })
     
     sendResponse(res, {
@@ -48,25 +50,28 @@ const getNewAccessToken = catchAsync(async (req: Request, res: Response, next: N
     })
 })
 const logout = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: true, 
+    sameSite: "none", 
+    path: "/", 
+  });
 
-    res.clearCookie("accessToken", {
-        httpOnly: true,
-        secure: false,
-        sameSite: "lax"
-    })
-    res.clearCookie("refreshToken", {
-        httpOnly: true,
-        secure: false,
-        sameSite: "lax"
-    })
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/",
+  });
 
-    sendResponse(res, {
-        success: true,
-        statusCode: httpStatus.OK,
-        message: "User Logged Out Successfully",
-        data: null,
-    })
-})
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "User Logged Out Successfully",
+    data: null,
+  });
+});
+
 const changePassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     const newPassword = req.body.newPassword;

@@ -8,6 +8,7 @@ import { QueryBuilder } from "../../utils/QueryBuilder";
 import { userSearchableFields } from "./user.constant";
 import { JwtPayload } from "jsonwebtoken";
 import { Wallet } from "../wallet/wallet.model";
+import { Transaction } from "../transaction/transaction.model";
 
 // const createUser = async (payload: Partial<IUser>) => {
 //   const { phone, password, ...rest } = payload;
@@ -87,7 +88,8 @@ const createUser = async (payload: Partial<IUser>) => {
     name: rest.name,
     address: rest.address,
     role: finalRole,
-    isVerified: rest.isVerified ?? false,
+    // isVerified: rest.isVerified ?? false,
+    isVerified: rest.isVerified ?? true,
     auths: [authProvider],
   });
   let wallet = null;
@@ -190,7 +192,9 @@ const updateUser = async (
 };
 
 const getMe = async (userId: string) => {
-  const user = await User.findById(userId).select("-password");
+  const user = await User.findById(userId)
+    .select("-password")
+    .populate("wallet");
   return {
     data: user,
   };
@@ -215,7 +219,19 @@ const suspendAgent = async (agentId: string) => {
   await user.save();
   return user;
 };
+const getOverview = async () => {
+  const totalUsers = await User.countDocuments();
+  const totalAgents = await User.countDocuments({ role: Role.AGENT });
+  const transactionCount = await Transaction.countDocuments();
 
+  const transactionVolumeAgg = await Transaction.aggregate([
+    { $group: { _id: null, total: { $sum: "$amount" } } },
+  ]);
+
+  const transactionVolume = transactionVolumeAgg[0]?.total || 0;
+
+  return { totalUsers, totalAgents, transactionCount, transactionVolume };
+};
 
 export const UserServices = {
   createUser,
@@ -224,5 +240,6 @@ export const UserServices = {
   updateUser,
   getMe,
   approveAgent,
-  suspendAgent
+  suspendAgent,
+  getOverview,
 };

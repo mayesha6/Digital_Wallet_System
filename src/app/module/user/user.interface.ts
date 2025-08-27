@@ -30,7 +30,7 @@ export interface IUser {
   wallet?: Types.ObjectId;
   role: Role;
   commissionRate?: number;
-  userStatus?: UserStatus
+  userStatus?: UserStatus;
   createdAt?: Date;
   updatedAt?: Date;
 }

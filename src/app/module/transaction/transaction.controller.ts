@@ -17,18 +17,38 @@ export const createTransaction = catchAsync(
   }
 );
 
+// export const getMyTransactions = catchAsync(
+//   async (req: Request, res: Response, next:NextFunction) => {
+//     const myTransaction = req.user as JwtPayload
+//     const result = await TransactionServices.getMyTransactions(myTransaction.userId);
+//     sendResponse(res, {
+//         success: true,
+//         statusCode: httpStatus.OK,
+//         message: "Your Transaction Retrieved Successfully",
+//         data: result,
+//     })
+//   }
+// );
+
 export const getMyTransactions = catchAsync(
-  async (req: Request, res: Response, next:NextFunction) => {
-    const myTransaction = req.user as JwtPayload
-    const result = await TransactionServices.getMyTransactions(myTransaction.userId);
+  async (req: Request, res: Response) => {
+    const myTransaction = req.user as JwtPayload;
+    const query = req.query
+    const result = await TransactionServices.getMyTransactions(
+      myTransaction.userId,
+      query as Record<string, string>
+    );
+
     sendResponse(res, {
-        success: true,
-        statusCode: httpStatus.OK,
-        message: "Your Transaction Retrieved Successfully",
-        data: result,
-    })
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Your Transactions Retrieved Successfully",
+      data: result.data,
+      meta: result.meta,
+    });
   }
 );
+
 
 export const getAllTransactions = catchAsync(
   async (req: Request, res: Response, next:NextFunction) => {

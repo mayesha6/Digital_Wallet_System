@@ -55,7 +55,7 @@ const createTransaction = async (payload: ITransaction) => {
           );
         }
 
-        fee = Math.floor(amount * 0.01); 
+        fee = Math.floor(amount * 0.01);
         if (userWallet.balance < amount + fee) {
           throw new AppError(
             httpStatus.BAD_REQUEST,
@@ -134,22 +134,46 @@ const createTransaction = async (payload: ITransaction) => {
     session.endSession();
   }
 };
-const getMyTransactions = async (userId: string) => {
-  const user = await User.findById(userId);
-  const transactions = await Transaction.find({
-    $or: [{ from: user }, { to: user }, { initiatedBy: user }],
-  }).sort({ createdAt: -1 });
+// const getMyTransactions = async (userId: string) => {
+//   const user = await User.findById(userId);
+//   const transactions = await Transaction.find({
+//     $or: [{ from: user }, { to: user }, { initiatedBy: user }],
+//   }).sort({ createdAt: -1 });
 
-  return transactions;
+//   return transactions;
+// };
+const getMyTransactions = async (
+  userId: string,
+  query: Record<string, string>
+) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const transactionData = new QueryBuilder(
+    Transaction.find({
+      $or: [{ from: user._id }, { to: user._id }, { initiatedBy: user._id }],
+    }),
+    query
+  )
+    .filter()
+    .sort()
+    .paginate();
+
+  const [data, meta] = await Promise.all([
+    transactionData.build(),
+    transactionData.getMeta(),
+  ]);
+
+  return {
+    data,
+    meta,
+  };
 };
 const getAllTransactions = async (query: Record<string, string>) => {
   const queryBuilder = new QueryBuilder(Transaction.find(), query);
-  const transationData = queryBuilder
-    .filter()
-    .search(transactionSearchableFields)
-    .sort()
-    .fields()
-    .paginate();
+  const transationData = queryBuilder.filter().sort().fields().paginate();
 
   const [data, meta] = await Promise.all([
     transationData.build(),
@@ -161,6 +185,8 @@ const getAllTransactions = async (query: Record<string, string>) => {
     meta,
   };
 };
+
+
 export const TransactionServices = {
   createTransaction,
   getAllTransactions,
